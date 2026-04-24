@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  weather-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weather-agent
+    ports:
+      - "8000:8000"
+    environment:
+      - SENIVERSE_API_KEY=${SENIVERSE_API_KEY}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.deepseek.com}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-chat}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
